@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-Map Solver - Karnaugh Map Minimization Tool</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔷 K-Map Solver</h1>
+            <p class="subtitle">Karnaugh Map Minimization Tool</p>
+        </header>
+
+        <!-- Ad Banner Top -->
+        <div class="ad-banner ad-top">
+            <div class="ad-content">
+                <span class="ad-label">Advertisement</span>
+                <!-- Google AdSense will go here -->
+                <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                <!-- K-Map Solver Banner Ad -->
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                     data-ad-slot="XXXXXXXXXX"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
+        </div>
+
+        <!-- Content Wrapper with Sidebar -->
+        <div class="page-wrapper">
+            <main class="main-content">
+            <!-- Input Section -->
+            <section class="input-section">
+                <div class="input-group">
+                    <label for="variables">Number of Variables:</label>
+                    <select id="variables">
+                        <option value="2">2 Variables</option>
+                        <option value="3" selected>3 Variables</option>
+                        <option value="4">4 Variables</option>
+                        <option value="5">5 Variables</option>
+                        <option value="6">6 Variables</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="minterms">Minterms (m):</label>
+                    <input type="text" id="minterms" placeholder="e.g., 0,1,2,3,5,7" value="0,1,2,3,5,7">
+                    <small>Comma-separated decimal numbers or ranges like 0-3,5,7-9</small>
+                </div>
+
+                <div class="input-group">
+                    <label for="dontcares">Don't Cares (d):</label>
+                    <input type="text" id="dontcares" placeholder="e.g., 4,6" value="">
+                </div>
+
+                <div class="input-group">
+                    <label for="expression">Boolean Expression (optional):</label>
+                    <input type="text" id="expression" placeholder="e.g., A'B + BC' + ABD">
+                    <button id="parseBtn" class="btn btn-secondary">Parse</button>
+                </div>
+
+                <div class="button-group">
+                    <button id="solveBtn" class="btn btn-primary">Solve K-Map</button>
+                    <button id="clearBtn" class="btn btn-secondary">Clear</button>
+                    <button id="randomBtn" class="btn btn-secondary">Random Example</button>
+                </div>
+            </section>
+
+            <!-- Output Section -->
+            <section class="output-section">
+                <div class="output-grid">
+                    <!-- K-Map Visualization -->
+                    <div class="kmap-container">
+                        <h2>Karnaugh Map</h2>
+                        <div id="kmap" class="kmap-grid"></div>
+                        <div class="legend">
+                            <div class="legend-item"><span class="legend-color minterm"></span> Minterm (1)</div>
+                            <div class="legend-item"><span class="legend-color dontcare"></span> Don't Care (X)</div>
+                            <div class="legend-item"><span class="legend-color group-1"></span> Group 1</div>
+                            <div class="legend-item"><span class="legend-color group-2"></span> Group 2</div>
+                            <div class="legend-item"><span class="legend-color group-3"></span> Group 3</div>
+                        </div>
+                    </div>
+
+                    <!-- Results -->
+                    <div class="results-container">
+                        <h2>Simplified Expression</h2>
+                        <div class="result-box">
+                            <h3>SOP (Sum of Products)</h3>
+                            <p id="sop-result" class="expression">-</p>
+                        </div>
+                        <div class="result-box">
+                            <h3>POS (Product of Sums)</h3>
+                            <p id="pos-result" class="expression">-</p>
+                        </div>
+                        <div class="result-box stats">
+                            <h3>Statistics</h3>
+                            <p><strong>Variables:</strong> <span id="stat-variables">-</span></p>
+                            <p><strong>Minterms:</strong> <span id="stat-minterms">-</span></p>
+                            <p><strong>Prime Implicants:</strong> <span id="stat-prime">-</span></p>
+                            <p><strong>Essential Primes:</strong> <span id="stat-essential">-</span></p>
+                            <p><strong>Literals (SOP):</strong> <span id="stat-literals">-</span></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Algorithm Steps -->
+            <section class="algorithm-section">
+                <h2>Algorithm Steps</h2>
+                <div id="steps" class="steps-container">
+                    <p class="placeholder">Solve a K-map to see the algorithm steps...</p>
+                </div>
+            </section>
+
+            <!-- Export Section -->
+            <section class="export-section">
+                <h2>Export</h2>
+                <div class="export-buttons">
+                    <button id="exportLatex" class="btn btn-export">Export to LaTeX</button>
+                    <button id="exportText" class="btn btn-export">Export to Text</button>
+                    <button id="exportJSON" class="btn btn-export">Export to JSON</button>
+                    <button id="copyResults" class="btn btn-export">Copy to Clipboard</button>
+                </div>
+            </section>
+            </section>
+        </main>
+
+        <!-- Sidebar Ad -->
+        <aside class="ad-sidebar">
+            <div class="ad-unit">
+                <span class="ad-label">Advertisement</span>
+                <!-- Google AdSense - Replace ca-pub-XXXXX with your publisher ID -->
+                <div class="ad-placeholder">
+                    <p><strong>Ad Space (300×600)</strong></p>
+                    <p>Add your Google AdSense code here</p>
+                    <p style="font-size: 0.8rem; color: #999;">Remove this placeholder when deploying</p>
+                </div>
+                <!-- Uncomment and add your AdSense code below:
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                     data-ad-slot="XXXXXXXXXX"
+                     data-ad-format="vertical"
+                     data-full-width-responsive="true"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+                -->
+            </div>
+        </aside>
+    </div> <!-- Close page-wrapper -->
+
+    <footer>
+        <p>K-Map Solver - Educational Tool for Digital Logic Design</p>
+    </footer>
+</div> <!-- Close container -->
+
+    <script src="app.js"></script>
+</body>
+</html>

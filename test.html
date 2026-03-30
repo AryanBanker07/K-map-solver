@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-Map Solver - Test Cases</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 { color: #333; }
+        .test-case {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-case h3 {
+            color: #4a90d9;
+            margin-top: 0;
+        }
+        .input { color: #666; font-family: monospace; }
+        button {
+            background: #4a90d9;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover { background: #357abd; }
+        .results {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .success { color: #28a745; font-weight: bold; }
+        .note {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 K-Map Solver - Test Cases</h1>
+
+    <div class="note">
+        <strong>Instructions:</strong> Click any "Run Test" button below to automatically fill the K-Map Solver with the test case and solve it.
+        The main solver will open in a new tab.
+    </div>
+
+    <div class="test-case">
+        <h3>Test 1: Simple 2-variable</h3>
+        <div class="input">Minterms: 0, 1, 2, 3 (all ones)</div>
+        <p>Expected: SOP = A' + B' (or equivalent)</p>
+        <button onclick="runTest(2, '0,1,2,3', '')">Run Test</button>
+    </div>
+
+    <div class="test-case">
+        <h3>Test 2: 3-variable standard</h3>
+        <div class="input">Minterms: 0, 1, 2, 3, 5, 7</div>
+        <p>Common example: groups at {0,1,2,3} and {3,5,7}</p>
+        <button onclick="runTest(3, '0,1,2,3,5,7', '')">Run Test</button>
+    </div>
+
+    <div class="test-case">
+        <h3>Test 3: With don't cares</h3>
+        <div class="input">Minterms: 0, 1, 2, 4, 5<br>Don't cares: 3, 6, 7</div>
+        <p>Don't cares enable larger groups</p>
+        <button onclick="runTest(3, '0,1,2,4,5', '3,6,7')">Run Test</button>
+    </div>
+
+    <div class="test-case">
+        <h3>Test 4: 4-variable complex</h3>
+        <div class="input">Minterms: 0,1,2,3,4,5,6,7,8,9,10,12,13</div>
+        <p>Larger K-map with multiple groups</p>
+        <button onclick="runTest(4, '0,1,2,3,4,5,6,7,8,9,10,12,13', '')">Run Test</button>
+    </div>
+
+    <div class="test-case">
+        <h3>Test 5: 3-variable diagonal</h3>
+        <div class="input">Minterms: 0, 2, 5, 7</div>
+        <p>No adjacent cells; should output sum of minterms or literals</p>
+        <button onclick="runTest(3, '0,2,5,7', '')">Run Test</button>
+    </div>
+
+    <div class="test-case">
+        <h3>Test 6: Single minterm</h3>
+        <div class="input">Minterms: 5</div>
+        <p>Single cell - no grouping possible</p>
+        <button onclick="runTest(3, '5', '')">Run Test</button>
+    </div>
+
+    <div class="test-case">
+        <h3>Test 7: 5-variable</h3>
+        <div class="input">Minterms: 0-7, 16-23</div>
+        <p>Large K-map (32 cells). Shows scroll but still functional.</p>
+        <button onclick="runTest(5, '0-7,16-23', '')">Run Test</button>
+    </div>
+
+    <div class="test-case">
+        <h3>Test 8: Random Example</h3>
+        <p>Generates a random K-map</p>
+        <button onclick="runRandom()">Run Random Test</button>
+    </div>
+
+    <div class="test-case">
+        <h3>Open Full Solver</h3>
+        <p>Open the K-Map Solver in a new tab</p>
+        <button onclick="window.open('index.html', '_blank')">Open Solver</button>
+    </div>
+
+    <script>
+        function runTest(variables, minterms, dontcares) {
+            const url = `index.html?vars=${variables}&mins=${encodeURIComponent(minterms)}&dont=${encodeURIComponent(dontcares)}`;
+            window.open(url, '_blank');
+        }
+
+        function runRandom() {
+            // Generate random test
+            const variables = Math.floor(Math.random() * 4) + 2; // 2-5 variables
+            const max = Math.pow(2, variables);
+            const numMinterms = Math.floor(Math.random() * (max / 2)) + 1;
+            const minterms = new Set();
+
+            while (minterms.size < numMinterms) {
+                minterms.add(Math.floor(Math.random() * max));
+            }
+
+            const mintermsStr = Array.from(minterms).sort((a,b) => a-b).join(',');
+
+            // Random dont cares
+            const numDontCares = Math.floor(Math.random() * (max / 4));
+            const dontCares = new Set();
+            while (dontCares.size < numDontCares) {
+                const d = Math.floor(Math.random() * max);
+                if (!minterms.has(d)) {
+                    dontCares.add(d);
+                }
+            }
+            const dontCaresStr = Array.from(dontCares).sort((a,b) => a-b).join(',');
+
+            runTest(variables, mintermsStr, dontCaresStr);
+        }
+    </script>
+</body>
+</html>

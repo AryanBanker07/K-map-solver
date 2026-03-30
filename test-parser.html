@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boolean Expression Parser Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 { color: #333; }
+        .test-case {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-case h3 {
+            color: #4a90d9;
+            margin-top: 0;
+        }
+        .expr { font-family: monospace; color: #e74c3c; font-weight: bold; }
+        .result { font-family: monospace; color: #28a745; margin-top: 10px; }
+        .note {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+        }
+        button {
+            background: #4a90d9;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px 5px 5px 0;
+            font-size: 14px;
+        }
+        button:hover { background: #357abd; }
+        #output {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Boolean Expression Parser Test</h1>
+
+    <div class="note">
+        <strong>Test the parser:</strong> Enter a boolean expression and click "Parse & Solve".
+        The K-Map Solver will convert it to minterms automatically.
+    </div>
+
+    <div class="test-case">
+        <h3>Interactive Test</h3>
+        <label>Variables: </label>
+        <select id="variables">
+            <option value="2">2 Variables (A,B)</option>
+            <option value="3" selected>3 Variables (A,B,C)</option>
+            <option value="4">4 Variables (A,B,C,D)</option>
+            <option value="5">5 Variables (A-E)</option>
+            <option value="6">6 Variables (A-F)</option>
+        </select><br><br>
+
+        <label>Expression (use A, B, C...): </label><br>
+        <input type="text" id="expr" style="width: 100%; padding: 10px; font-size: 16px;" placeholder="e.g., A'B + BC' + ABD" value="A*B + A*C + B*C"><br><br>
+
+        <button onclick="testExpression()">Parse & Solve</button>
+        <button onclick="testExample('A\'B + B\'C + ABC')">Example 1</button>
+        <button onclick="testExample('A*B + A*C + B*C')">Example 2</button>
+        <button onclick="testExample('A+B')">Example 3</button>
+        <button onclick="testExample('A*B*C')">Example 4</button>
+    </div>
+
+    <div class="test-case">
+        <h3>Pre-built Tests</h3>
+        <p>Click to test each expression:</p>
+        <button onclick="runPreset('A*B', 2)">A AND B</button>
+        <button onclick="runPreset('A+B', 2)">A OR B</button>
+        <button onclick="runPreset(\"A'+B'\", 2)">NOT A OR NOT B</button>
+        <button onclick="runPreset('A*B + A*C + B*C', 3)">Majority (3-var)</button>
+        <button onclick="runPreset(\"A'*B'*C' + A'*B*C + A*B'*C + A*B*C\", 3)">All minterms</button>
+        <button onclick="runPreset('A*B*C*D', 4)">All AND</button>
+        <button onclick="runPreset('A+B+C+D', 4)">All OR</button>
+        <button onclick="runPreset(\"A'*B*C + A*B'*C + A*B*C' + A*B*C\", 3)">Full adder sum</button>
+    </div>
+
+    <div id="output"></div>
+
+    <script>
+        const output = document.getElementById('output');
+
+        function log(msg) {
+            output.textContent += msg + '\n';
+        }
+
+        function clear() {
+            output.textContent = '';
+        }
+
+        // Tokenize expression with proper handling
+        function tokenize(expr) {
+            const tokens = [];
+            let i = 0;
+            while (i < expr.length) {
+                const char = expr[i];
+                // Variable (A-Z)
+                if (/^[A-Z]$/i.test(char)) {
+                    // Implied * before this variable if previous token was variable, prime, or closing parenthesis
+                    if (tokens.length > 0 && (/^[A-Z]$/i.test(tokens[tokens.length - 1]) || tokens[tokens.length - 1] === "'" || tokens[tokens.length - 1] === ')')) {
+                        tokens.push('*');
+                    }
+                    tokens.push(char.toUpperCase());
+                    i++;
+                } else if (char === '0' || char === '1') {
+                    // Constants
+                    if (tokens.length > 0 && (/^[A-Z]$/i.test(tokens[tokens.length - 1]) || tokens[tokens.length - 1] === "'" || tokens[tokens.length - 1] === ')')) {
+                        tokens.push('*');
+                    }
+                    tokens.push(char);
+                    i++;
+                } else if (char === "'") {
+                    tokens.push("'");
+                    i++;
+                } else if (char === '+' || char === '*' || char === '(' || char === ')') {
+                    tokens.push(char);
+                    i++;
+                } else {
+                    throw new Error(`Invalid character: ${char}`);
+                }
+            }
+            return tokens;
+        }
+
+        function getPrecedence(op) {
+            if (op === "'") return 3;
+            if (op === '*') return 2;
+            if (op === '+') return 1;
+            return 0;
+        }
+
+        function toRPN(tokens) {
+            const output = [];
+            const stack = [];
+            for (const token of tokens) {
+                if (/^[A-Z0-1]$/i.test(token) || token === '0' || token === '1') {
+                    output.push(token);
+                } else if (token === "'") {
+                    stack.push(token);
+                } else if (token === '+' || token === '*') {
+                    while (stack.length > 0) {
+                        const top = stack[stack.length - 1];
+                        if (top === '(') break;
+                        if (getPrecedence(top) >= getPrecedence(token)) {
+                            output.push(stack.pop());
+                        } else {
+                            break;
+                        }
+                    }
+                    stack.push(token);
+                } else if (token === '(') {
+                    stack.push(token);
+                } else if (token === ')') {
+                    while (stack.length > 0 && stack[stack.length - 1] !== '(') {
+                        output.push(stack.pop());
+                    }
+                    if (stack.length === 0 || stack[stack.length - 1] !== '(') throw new Error('Mismatched parentheses');
+                    stack.pop();
+                }
+            }
+            while (stack.length > 0) {
+                const op = stack.pop();
+                if (op === '(') throw new Error('Mismatched parentheses');
+                output.push(op);
+            }
+            return output;
+        }
+
+        function evaluate(expr, values) {
+            const tokens = tokenize(expr);
+            const rpn = toRPN(tokens);
+            const stack = [];
+            // Debug: uncomment to see tokens/RPN
+            // log('Tokens: ' + tokens.join(', '));
+            // log('RPN: ' + rpn.join(', '));
+            for (const token of rpn) {
+                if (/^[A-Z]$/i.test(token)) {
+                    if (!(token in values)) throw new Error(`Unknown variable: ${token}`);
+                    stack.push(values[token]);
+                } else if (token === '0') {
+                    stack.push(false);
+                } else if (token === '1') {
+                    stack.push(true);
+                } else if (token === "'") {
+                    if (stack.length < 1) throw new Error('Invalid expression (NOT needs operand)');
+                    stack.push(!stack.pop());
+                } else if (token === '+') {
+                    if (stack.length < 2) throw new Error('Invalid expression (OR needs two operands)');
+                    stack.push(stack.pop() || stack.pop());
+                } else if (token === '*') {
+                    if (stack.length < 2) throw new Error('Invalid expression (AND needs two operands)');
+                    stack.push(stack.pop() && stack.pop());
+                } else {
+                    throw new Error(`Unknown operator: ${token}`);
+                }
+            }
+            if (stack.length !== 1) throw new Error('Invalid expression (stack has ' + stack.length + ' items)');
+            return stack[0];
+        }
+
+        function parseToMinterms(expr, numVars) {
+            const variables = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.slice(0, numVars);
+            const maxValue = 2 ** numVars;
+            const minterms = [];
+
+            for (let i = 0; i < maxValue; i++) {
+                const binary = i.toString(2).padStart(numVars, '0');
+                const values = {};
+                for (let v = 0; v < numVars; v++) {
+                    values[variables[v]] = binary[v] === '1';
+                }
+
+                try {
+                    if (evaluate(expr, values)) {
+                        minterms.push(i);
+                    }
+                } catch (e) {
+                    // If evaluation fails for a specific row, continue (should not happen)
+                    // Log the error and continue for debugging
+                    console.error('Error at row', i, binary, e);
+                }
+            }
+
+            return minterms;
+        }
+
+        function testExpression() {
+            clear();
+            const expr = document.getElementById('expr').value;
+            const variables = parseInt(document.getElementById('variables').value);
+
+            if (!expr) {
+                log('Error: Please enter an expression');
+                return;
+            }
+
+            if (isNaN(variables) || variables < 2 || variables > 6) {
+                log('Error: Variables must be between 2 and 6');
+                return;
+            }
+
+            try {
+                // Use corrected method to display variables list
+                const varNames = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.substring(0, variables).split('').join(', ');
+                log(`Expression: <span class="expr">${expr}</span>`);
+                log(`Variables: ${variables} (${varNames})`);
+                log('');
+
+                const minterms = parseToMinterms(expr, variables);
+
+                if (minterms.length === 0) {
+                    log('Result: 0 (expression is always false)');
+                } else if (minterms.length === 2 ** variables) {
+                    log('Result: 1 (expression is always true)');
+                } else {
+                    log(`Minterms (${minterms.length}): <span class="result">${minterms.join(', ')}</span>`);
+
+                    // Show truth table
+                    log('\nTruth Table:');
+                    const headerPrefix = 'A B C D E F'.substring(0, variables * 2 - 1); // approximate
+                    // Build header dynamically
+                    let header = '';
+                    for (let i = 0; i < variables; i++) {
+                        header += String.fromCharCode(65 + i) + ' ';
+                    }
+                    header = header.trim() + ' | Out';
+                    log(header);
+                    log('-'.repeat(header.length));
+
+                    // Show first up to 16 rows
+                    for (let i = 0; i < Math.min(2 ** variables, 16); i++) {
+                        const binary = i.toString(2).padStart(variables, '0');
+                        const values = {};
+                        const vars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.slice(0, variables);
+                        for (let v = 0; v < variables; v++) {
+                            values[vars[v]] = binary[v] === '1';
+                        }
+                        const out = evaluate(expr, values) ? '1' : '0';
+                        // Format binary with spaces between bits
+                        const spacedBinary = binary.split('').join(' ');
+                        log(`${spacedBinary} | ${out}`);
+                    }
+
+                    if (2 ** variables > 16) {
+                        log(`... (showing first 16 of ${2 ** variables} rows)`);
+                    }
+                }
+            } catch (error) {
+                log(`Error: ${error.message}\n\nSupported operators:\n  - AND: implied (AB) or * (A*B)\n  - OR: + (A+B)\n  - NOT: apostrophe (A\')\n  - Parentheses: (A+B)*C\n\nExample: A'B + B'C + ABC`);
+            }
+        }
+
+        function testExample(expr) {
+            document.getElementById('expr').value = expr;
+            testExpression();
+        }
+
+        function runPreset(expr, vars) {
+            document.getElementById('variables').value = vars;
+            testExample(expr);
+        }
+
+        // Enter key support
+        document.getElementById('expr').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') testExpression();
+        });
+
+        // Test on load
+        testExample("A*B + A*C + B*C");
+    </script>
+</body>
+</html>

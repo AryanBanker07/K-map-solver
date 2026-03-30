@@ -1,0 +1,973 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   K-MAP SOLVER - Neo-Brutalist Technical Interface
+   High-contrast terminal aesthetic with sharp edges & neon accents
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@400;500;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Core palette - terminal/cyberpunk */
+    --bg-deep: #050505;
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #12121a;
+    --bg-tertiary: #1a1a25;
+    --bg-panel: #14141c;
+
+    --text-bright: #ffffff;
+    --text-primary: #e8e8e8;
+    --text-secondary: #a0a0a8;
+    --text-dim: #606068;
+
+    /* Neon accents - each has purpose */
+    --accent-green: #00ff9d;
+    --accent-blue: #00d4ff;
+    --accent-purple: #b147ff;
+    --accent-orange: #ff6b35;
+    --accent-yellow: #ffd93d;
+    --accent-red: #ff5555;
+
+    /* K-map semantic colors */
+    --cell-minterm: #00ff9d;
+    --cell-minterm-bg: #0a3320;
+    --cell-dontcare: #ffd93d;
+    --cell-dontcare-bg: #332a00;
+    --cell-zero: #1a1a25;
+
+    --group-1: #00d4ff;
+    --group-2: #b147ff;
+    --group-3: #ff6b35;
+    --group-4: #ff5555;
+    --group-5: #00ff9d;
+    --group-6: #ffd93d;
+
+    /* Brutalist borders */
+    --border-1: 1px solid #2a2a35;
+    --border-2: 2px solid #3a3a48;
+    --border-3: 3px solid #4a4a58;
+    --border-neon-green: 2px solid var(--accent-green);
+    --border-neon-blue: 2px solid var(--accent-blue);
+
+    /* Spacing scale */
+    --space-1: 0.5rem;
+    --space-2: 1rem;
+    --space-3: 1.5rem;
+    --space-4: 2rem;
+    --space-5: 3rem;
+    --space-6: 4rem;
+
+    /* Typography */
+    --font-mono: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+    --font-display: 'Space Grotesk', 'Arial Black', sans-serif;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GLOBAL RESET & BACKGROUND
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.6;
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* CRT scanlines overlay */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.4) 0px,
+        rgba(0, 0, 0, 0.4) 1px,
+        transparent 1px,
+        transparent 3px
+    );
+    z-index: 10000;
+    opacity: 0.5;
+}
+
+/* Subtle noise/grain texture */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    opacity: 0.08;
+    z-index: 9999;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LAYOUT
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: var(--space-3);
+    position: relative;
+    z-index: 1;
+}
+
+.page-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: var(--space-4);
+    margin-top: 0;
+    position: relative;
+}
+
+.main-content {
+    min-width: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HEADER - Terminal command prompt aesthetic
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+header {
+    text-align: center;
+    padding: var(--space-5) var(--space-3);
+    background: var(--bg-secondary);
+    border: var(--border-neon-green);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Corner brackets - industrial detail */
+header::before,
+header::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--accent-green);
+}
+
+header::before {
+    top: 6px;
+    left: 6px;
+    border-right: none;
+    border-bottom: none;
+}
+
+header::after {
+    bottom: 6px;
+    right: 6px;
+    border-left: none;
+    border-top: none;
+}
+
+header .version-tag {
+    position: absolute;
+    top: 8px;
+    left: 35px;
+    font-size: 0.65rem;
+    color: var(--accent-green);
+    opacity: 0.7;
+    letter-spacing: 0.1em;
+}
+
+header h1 {
+    font-family: var(--font-display);
+    font-size: 3.5rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent-green);
+    margin-bottom: var(--space-1);
+    text-shadow:
+        0 0 20px rgba(0, 255, 157, 0.5),
+        0 0 40px rgba(0, 255, 157, 0.3);
+    animation: pulse-glow 4s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% { text-shadow: 0 0 20px rgba(0, 255, 157, 0.5); }
+    50% { text-shadow: 0 0 30px rgba(0, 255, 157, 0.8), 0 0 50px rgba(0, 255, 157, 0.4); }
+}
+
+.subtitle {
+    font-size: 0.85rem;
+    color: var(--accent-blue);
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ADS - Brutalist ad containers
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.ad-banner {
+    width: 100%;
+    background: var(--bg-tertiary);
+    border: var(--border-2);
+    margin-bottom: var(--space-4);
+    text-align: center;
+    position: relative;
+}
+
+.ad-banner::before {
+    content: "ADVERTISEMENT";
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+}
+
+.ad-top {
+    max-width: 728px;
+    margin: var(--space-4) auto var(--space-4);
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ad-sidebar {
+    position: sticky;
+    top: var(--space-4);
+    height: fit-content;
+}
+
+.ad-unit {
+    background: var(--bg-panel);
+    border: var(--border-2);
+    padding: var(--space-2);
+    text-align: center;
+    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.ad-unit::before {
+    content: "AD";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    font-weight: 700;
+}
+
+.ad-placeholder {
+    color: var(--text-dim);
+    line-height: 1.8;
+}
+
+.ad-placeholder strong {
+    color: var(--text-secondary);
+    display: block;
+    margin-bottom: var(--space-1);
+    font-size: 1.1rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SECTIONS - Card-like panels with sharp edges
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+section {
+    background: var(--bg-panel);
+    border: var(--border-2);
+    padding: var(--space-4);
+    margin-bottom: var(--space-4);
+    position: relative;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* Industrial corner accents */
+section::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border: 1px solid var(--accent-blue);
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+section h2,
+section h3 {
+    font-family: var(--font-display);
+    color: var(--accent-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: var(--space-3);
+    font-size: 1.3rem;
+    position: relative;
+    padding-bottom: var(--space-1);
+}
+
+section h2::after,
+section h3::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 2px;
+    background: var(--accent-green);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FORM ELEMENTS - Raw, unpolished inputs
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.input-group {
+    margin-bottom: var(--space-3);
+    position: relative;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--accent-green);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: var(--space-1);
+    font-weight: 700;
+}
+
+.input-group input,
+.input-group select {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--bg-primary);
+    border: var(--border-2);
+    border-color: #3a3a48;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    transition: all 0.15s ease;
+    outline: none;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+    border-color: var(--accent-green);
+    box-shadow:
+        0 0 0 3px rgba(0, 255, 157, 0.1),
+        inset 0 0 10px rgba(0, 255, 157, 0.05);
+}
+
+.input-group small {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BUTTONS - Sharp, chunky, brutalist
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.button-group {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    margin-top: var(--space-4);
+}
+
+.btn {
+    padding: 14px 24px;
+    border: none;
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+    outline: none;
+}
+
+.btn-primary {
+    background: var(--accent-green);
+    color: var(--bg-deep);
+    flex: 1;
+    border: 2px solid var(--accent-green);
+    min-width: 200px;
+}
+
+.btn-primary:hover {
+    background: #00ffb3;
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 rgba(0, 255, 157, 0.4);
+}
+
+.btn-primary:active {
+    transform: translate(0, 0);
+    box-shadow: none;
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 2px solid #4a4a58;
+}
+
+.btn-secondary:hover {
+    background: var(--bg-secondary);
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.btn-export {
+    background: var(--bg-tertiary);
+    color: var(--accent-blue);
+    border: 2px solid var(--accent-blue);
+    font-size: 0.8rem;
+    padding: 10px 18px;
+}
+
+.btn-export:hover {
+    background: var(--accent-blue);
+    color: var(--bg-deep);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   K-MAP GRID - Terminal display with pixel-perfect precision
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.kmap-container {
+    background: var(--bg-secondary);
+    border: var(--border-2);
+    padding: var(--space-3);
+}
+
+.kmap-grid {
+    display: inline-block; /* Changed from inline-table to avoid table quirks */
+    background: var(--bg-primary);
+    padding: 6px;
+    border: var(--border-1);
+    font-family: var(--font-mono);
+    margin: var(--space-3) auto;
+}
+
+/* Header row container (top row with column labels) */
+.kmap-header-row {
+    display: flex;
+    gap: 3px;
+    margin-bottom: 3px;
+}
+
+/* Data row container */
+.kmap-row {
+    display: flex;
+    gap: 3px;
+}
+
+/* All cell-like elements: column headers, row headers, corner, and data cells */
+.kmap-header-col,
+.kmap-row-header,
+.kmap-corner,
+.kmap-cell {
+    width: 65px;
+    height: 65px;
+    border: var(--border-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* Column header cells (top row labels) */
+.kmap-header-col {
+    background: var(--bg-tertiary);
+    color: var(--accent-blue);
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+/* Row header cells (leftmost column) */
+.kmap-row-header {
+    background: var(--bg-tertiary);
+    color: var(--accent-blue);
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+/* Empty corner (top-left) */
+.kmap-corner {
+    background: var(--bg-tertiary);
+    border-color: transparent;
+}
+
+.kmap-cell {
+    width: 65px;
+    height: 65px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--cell-zero);
+    border: 2px solid #2a2a35;
+    font-weight: 700;
+    position: relative;
+    transition: all 0.2s ease;
+    cursor: default;
+}
+
+.kmap-cell:hover {
+    border-color: var(--accent-blue);
+    transform: scale(1.05);
+    z-index: 10;
+}
+
+/* Cell content styles */
+.kmap-cell .cell-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.kmap-cell .cell-index {
+    position: absolute;
+    bottom: 3px;
+    right: 5px;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+}
+
+/* K-map cell states */
+.kmap-cell.minterm {
+    background: var(--cell-minterm-bg);
+    color: var(--cell-minterm);
+    border-color: var(--accent-green);
+    box-shadow: 0 0 15px rgba(0, 255, 157, 0.3);
+}
+
+.kmap-cell.dontcare {
+    background: var(--cell-dontcare-bg);
+    color: var(--cell-dontcare);
+    border-color: var(--accent-yellow);
+    box-shadow: 0 0 15px rgba(255, 217, 61, 0.3);
+}
+
+/* Group overlays with glows */
+.kmap-cell.group-1 {
+    background: rgba(0, 212, 255, 0.25);
+    border-color: var(--group-1);
+    box-shadow:
+        inset 0 0 20px rgba(0, 212, 255, 0.3),
+        0 0 20px rgba(0, 212, 255, 0.2);
+}
+
+.kmap-cell.group-2 {
+    background: rgba(177, 71, 255, 0.25);
+    border-color: var(--group-2);
+    box-shadow:
+        inset 0 0 20px rgba(177, 71, 255, 0.3),
+        0 0 20px rgba(177, 71, 255, 0.2);
+}
+
+.kmap-cell.group-3 {
+    background: rgba(255, 107, 53, 0.25);
+    border-color: var(--group-3);
+    box-shadow:
+        inset 0 0 20px rgba(255, 107, 53, 0.3),
+        0 0 20px rgba(255, 107, 53, 0.2);
+}
+
+.kmap-cell.group-4 {
+    background: rgba(255, 85, 85, 0.25);
+    border-color: var(--group-4);
+    box-shadow:
+        inset 0 0 20px rgba(255, 85, 85, 0.3),
+        0 0 20px rgba(255, 85, 85, 0.2);
+}
+
+.kmap-cell.group-5 {
+    background: rgba(0, 255, 157, 0.25);
+    border-color: var(--group-5);
+    box-shadow:
+        inset 0 0 20px rgba(0, 255, 157, 0.3),
+        0 0 20px rgba(0, 255, 157, 0.2);
+}
+
+.kmap-cell.group-6 {
+    background: rgba(255, 217, 61, 0.25);
+    border-color: var(--group-6);
+    box-shadow:
+        inset 0 0 20px rgba(255, 217, 61, 0.3),
+        0 0 20px rgba(255, 217, 61, 0.2);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LEGEND - Terminal legend with color codes
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+    padding: var(--space-2);
+    background: var(--bg-tertiary);
+    border: var(--border-1);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #444;
+}
+
+.legend-color.minterm {
+    background: var(--cell-minterm);
+    box-shadow: 0 0 8px var(--accent-green);
+}
+
+.legend-color.dontcare {
+    background: var(--cell-dontcare);
+    box-shadow: 0 0 8px var(--accent-yellow);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESULTS - Terminal output styling
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.output-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+}
+
+@media (max-width: 1200px) {
+    .page-wrapper {
+        grid-template-columns: 1fr;
+    }
+
+    .ad-sidebar {
+        position: static;
+        order: -1;
+    }
+
+    .ad-unit {
+        min-height: 100px;
+    }
+}
+
+.results-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.result-box {
+    background: var(--bg-secondary);
+    border-left: 4px solid var(--accent-blue);
+    padding: var(--space-3);
+    position: relative;
+}
+
+.result-box.stats {
+    border-left-color: var(--accent-green);
+}
+
+.result-box h3 {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: var(--space-2);
+}
+
+.result-box .expression {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent-green);
+    font-family: var(--font-mono);
+    padding: var(--space-2);
+    background: rgba(0, 255, 157, 0.05);
+    border: 1px solid rgba(0, 255, 157, 0.2);
+    word-break: break-all;
+    min-height: 60px;
+    text-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
+}
+
+.result-box.stats p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-1);
+    display: flex;
+    justify-content: space-between;
+}
+
+.result-box.stats p:last-child {
+    margin-bottom: 0;
+}
+
+.result-box.stats strong {
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+.result-box.stats span {
+    color: var(--accent-blue);
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ALGORITHM STEPS - Terminal log output
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.steps-container {
+    max-height: 500px;
+    overflow-y: auto;
+    background: var(--bg-deep);
+    border: var(--border-1);
+    padding: var(--space-2);
+}
+
+.step {
+    background: var(--bg-secondary);
+    border-left: 3px solid var(--accent-blue);
+    padding: var(--space-2);
+    margin-bottom: var(--space-2);
+    position: relative;
+}
+
+.step:last-child {
+    margin-bottom: 0;
+}
+
+.step-title {
+    font-size: 0.9rem;
+    color: var(--accent-blue);
+    font-weight: 700;
+    margin-bottom: var(--space-1);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.step-title::before {
+    content: "▶";
+    font-size: 0.7rem;
+    color: var(--accent-green);
+}
+
+.step-content {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    padding-left: var(--space-2);
+    font-family: var(--font-mono);
+}
+
+.step-content code {
+    background: rgba(0, 212, 255, 0.1);
+    color: var(--accent-blue);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.8rem;
+}
+
+.placeholder {
+    text-align: center;
+    color: var(--text-dim);
+    padding: var(--space-5);
+    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EXPORT SECTION - Terminal command style
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.export-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    background: var(--bg-deep);
+    border: var(--border-1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FOOTER - System info style
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+footer {
+    text-align: center;
+    padding: var(--space-4);
+    margin-top: calc(var(--space-5) + var(--space-4));
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    border-top: var(--border-1);
+    background: var(--bg-secondary);
+    font-family: var(--font-mono);
+    letter-spacing: 0.05em;
+}
+
+footer::before {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent,
+        var(--accent-green),
+        transparent);
+    margin-bottom: var(--space-2);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CUSTOM SCROLLBAR - Terminal style
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.steps-container::-webkit-scrollbar {
+    width: 10px;
+}
+
+.steps-container::-webkit-scrollbar-track {
+    background: var(--bg-deep);
+    border: 1px solid #2a2a35;
+}
+
+.steps-container::-webkit-scrollbar-thumb {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--accent-green);
+}
+
+.steps-container::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-green);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE - Mobile optimized
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 1.8rem;
+        letter-spacing: 0.08em;
+    }
+
+    .subtitle {
+        font-size: 0.75rem;
+    }
+
+    .output-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .kmap-cell {
+        width: 45px;
+        height: 45px;
+    }
+
+    .kmap-cell .cell-value {
+        font-size: 1rem;
+    }
+
+    .kmap-header-col,
+    .kmap-header-row {
+        min-width: 45px;
+        font-size: 0.7rem;
+        padding: 4px 2px;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    .legend {
+        justify-content: center;
+        gap: var(--space-1);
+    }
+
+    .page-wrapper {
+        gap: var(--space-2);
+    }
+
+    .ad-sidebar {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: var(--space-2);
+    }
+
+    header {
+        padding: var(--space-3) var(--space-2);
+    }
+
+    section {
+        padding: var(--space-2);
+    }
+
+    .result-box .expression {
+        font-size: 1.1rem;
+        padding: var(--space-1);
+    }
+}
+
+/* Print styles */
+@media print {
+    body::before,
+    body::after,
+    .ad-banner,
+    .ad-sidebar {
+        display: none !important;
+    }
+
+    .container {
+        max-width: 100%;
+    }
+
+    .kmap-grid {
+        page-break-inside: avoid;
+    }
+}
