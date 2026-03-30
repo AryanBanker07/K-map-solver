@@ -50,17 +50,6 @@ A comprehensive web-based Karnaugh Map (K-Map) solver for digital logic design. 
 - Don't cares: `3,6,7`
 - Enables larger groups for better minimization
 
-## File Structure
-
-```
-kmap-solver/
-├── index.html      # Main HTML structure
-├── styles.css      # Styling and layout
-├── app.js          # K-map solver logic
-├── README.md       # This file
-└── test.html       # Test cases (optional)
-```
-
 ## How It Works
 
 ### 1. Input Parsing
