@@ -145,17 +145,12 @@ This tool is designed for:
 - Verifying manual minimization
 - Computer organization/architecture labs
 
-## License
-
-MIT License - Free to use and modify for educational purposes.
 
 ## Contributing
 
 Contributions welcome! Feel free to:
 - Report bugs
 - Suggest features
-- Submit pull requests
-- Improve documentation
 
 ## Version
 
