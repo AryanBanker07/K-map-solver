@@ -23,12 +23,6 @@ A comprehensive web-based Karnaugh Map (K-Map) solver for digital logic design. 
 ## Quick Start
 
 1. **Open the website**:
-   ```bash
-   # Simply open index.html in a web browser
-   open index.html
-   # Or on Windows:
-   start index.html
-   ```
 
 2. **Enter minterms**: Type comma-separated decimal values (e.g., `0,1,2,3,5,7`)
 
